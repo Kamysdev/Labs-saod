@@ -25,12 +25,22 @@ int selectionCheck() {
   return 0;
 }
 
-void PrintTable(float entropy, float lenShen, float lenFano) {
+void PrintTable(float entropy, float lenShen, float lenFano, bool ver) {
     std::cout << std::endl << std::endl;
+    std::string name1, name2;
+    if (ver == false) {
+        name1 = "Код Шен.";
+        name2 = "Код Фано";
+    }
+    else {
+        name1 = "Код Г.Мур";
+        name2 = "Код Хаф.";
+    }
+
     std::cout << "=====================================================================" << std::endl
         << " Энтропия " << "|| Средняя длинна кодового ||      Избыточность кода      ||" << std::endl
         << " Исходного" << "||          слова          ||                             ||" << std::endl
-        << "  текста  " << "||  Код шен. ||  Код Фано  ||  Код шен.   ||   Код Фано   ||" << std::endl
+        << "  текста  " << "||  " << name1 << " ||  " << name2 << " ||   " << name1 << "  ||  " << name2 << "   ||  " << std::endl
         << "======================================================================" << std::endl
         << " " << entropy << "      " << lenShen << "     " << lenFano + 0.45 << "     " << lenShen - entropy << "       " << lenFano - entropy + 0.3 << std::endl
         << "======================================================================";

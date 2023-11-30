@@ -7,7 +7,7 @@
 /* Да | Нет */
 int selectionCheck();
 
-void PrintTable(float entropy, float lenShen, float lenFano);
+void PrintTable(float entropy, float lenShen, float lenFano, bool ver);
 
 /* Пауза в конце программы */
 void pauseAtTheEnd();

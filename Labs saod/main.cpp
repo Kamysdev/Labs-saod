@@ -132,7 +132,49 @@ int main(int argc, const char **argv) {
 	gilbertMur = GilbertMurCode(chanceSymbols, numUniqueSymbols);
 	float averageLgilbertMur = calculationAverageLength(gilbertMur, numUniqueSymbols);
 
-	PrintTable(entropy, averageLshannon, averageLfano);
+	std::cout << "\n" << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+	std::cout << "\nКОД ГИЛБЕРТА-МУРА:" << "\n";
+	std::cout << "Символ  частота длинна код\n";
+
+	for (int i = 0; i < numUniqueSymbols; i++) {
+		if (gilbertMur[i].ch == '\n')
+			std::cout << std::setw(4) << "\\n" << " | " << std::fixed << gilbertMur[i].Pi << " | " << std::fixed << gilbertMur[i].Li << " | ";
+		else
+			std::cout << std::setw(4) << gilbertMur[i].ch << " | " << std::fixed << gilbertMur[i].Pi << " | " << std::fixed << gilbertMur[i].Li << " | ";
+
+		for (int j = 0; j < gilbertMur[i].Li; j++)
+			std::cout << gilbertMur[i].codeword[j];
+		std::cout << "\n";
+	}
+	std::cout << "\n" << "Энтропия: " << entropy << " | " << " Средняя длина кодового слова: " << averageLgilbertMur << "\n";
+
+	/*Код Хаффман*/
+	quickSortV2(chanceSymbols, numUniqueSymbols - 1, 0, 0, 1);
+	codeHuffman* Huffman = nullptr;
+	Huffman = HuffmanCode(chanceSymbols, numUniqueSymbols);
+	float averageHuffman = calculationAverageLength(Huffman, numUniqueSymbols);
+
+	std::cout << "\n" << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+	std::cout << "\nКОД ХАФФМЕНА:" << "\n";
+	std::cout << "Символ  частота длинна код\n";
+
+	for (int i = 0; i < numUniqueSymbols; i++) {
+		if (Huffman[i].ch == '\n')
+			std::cout << std::setw(4) << "\\n" << " | " << std::fixed << Huffman[i].Pi << " | " << std::fixed << Huffman[i].Li << " | ";
+		else
+			std::cout << std::setw(4) << Huffman[i].ch << " | " << std::fixed << Huffman[i].Pi << " | " << std::fixed << Huffman[i].Li << " | ";
+
+		for (int j = 0; j < Huffman[i].Li; j++)
+			std::cout << Huffman[i].codeword[j];
+		std::cout << "\n";
+	}
+	std::cout << "\n" << "Энтропия: " << entropy << " | " << " Средняя длина кодового слова: " << averageHuffman << "\n";
+
+
+
+	PrintTable(entropy, averageLshannon, averageLfano, 0);
+	std::cout << std::endl;
+	PrintTable(entropy, averageLgilbertMur, averageHuffman, 1);
 
 	pauseAtTheEnd();
 	return 0;
