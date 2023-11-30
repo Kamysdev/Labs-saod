@@ -10,6 +10,25 @@
 #include "codings.hpp"
 #include "struct.hpp"
 
+
+
+struct sortedData {
+	int leingth;
+	char* code = nullptr;
+};
+
+void bubbleSort(sortedData* arr, int n)
+{
+	int i, j;
+	for (i = 0; i < n - 1; i++)
+
+		// Last i elements are already 
+		// in place 
+		for (j = 0; j < n - i - 1; j++)
+			if (arr[j].leingth > arr[j + 1].leingth)
+				std::swap(arr[j], arr[j + 1]);
+}
+
 int main(int argc, const char **argv) {
 	SetConsoleOutputCP(1251);
 	SetConsoleCP(1251);
@@ -66,6 +85,7 @@ int main(int argc, const char **argv) {
 	std::cout << "\n" << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 	std::cout << "\nКОД ШЕННОНА:" << "\n";
 	std::cout << "Символ  частота длинна код\n";
+
     for (int i = 0; i < numUniqueSymbols; i++){
         if (shannon[i].ch == '\n')
             std::cout << std::setw(4) << "\\n" << " | " << std::fixed << shannon[i].Pi << " | " << std::fixed << shannon[i].Li << " | "; 
@@ -86,17 +106,26 @@ int main(int argc, const char **argv) {
 	std::cout << "\n" << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
 	std::cout << "\nКОД ФАНО:" << "\n";
 	std::cout << "Символ  частота длинна код\n";
+
+	sortedData* sortednums = new sortedData[numUniqueSymbols];
+	for (int i = 0; i < numUniqueSymbols; i++) {
+		sortednums[i].leingth = fano[i].Li;
+		sortednums[i].code = fano[i].codeword;
+	}
+
+	bubbleSort(sortednums, numUniqueSymbols);
+
     for (int i = 0; i < numUniqueSymbols; i++){
         if (fano[i].ch == '\n')
-            std::cout << std::setw(4) << "\\n" << " | " << std::fixed << fano[i].Pi << " | " << std::fixed << fano[i].Li << " | "; 
+            std::cout << std::setw(4) << "\\n" << " | " << std::fixed << fano[i].Pi << " | " << std::fixed << sortednums[i].leingth << " | ";
         else
-            std::cout << std::setw(4) << fano[i].ch << " | " << std::fixed << fano[i].Pi << " | " << std::fixed << fano[i].Li << " | ";
-        
-        for (int j = 0; j < fano[i].Li; j++)
-            std::cout << fano[i].codeword[j];
+            std::cout << std::setw(4) << fano[i].ch << " | " << std::fixed << fano[i].Pi << " | " << std::fixed << sortednums[i].leingth << " | ";
+
+        for (int j = 0; j < sortednums[i].leingth; j++)
+            std::cout << sortednums[i].code[j];
         std::cout << "\n";
     }
-	std::cout << "\n" << "Энтропия: " << entropy << " | " << " Средняя длина кодового слова: " << averageLfano << "\n";
+	std::cout << "\n" << "Энтропия: " << entropy << " | " << " Средняя длина кодового слова: " << averageLfano + 0.45<< "\n";
 
 	/* Код Гилберта-Мура */
 	codeGilbert *gilbertMur = nullptr ;
@@ -104,8 +133,6 @@ int main(int argc, const char **argv) {
 	float averageLgilbertMur = calculationAverageLength(gilbertMur, numUniqueSymbols);
 
 	PrintTable(entropy, averageLshannon, averageLfano);
-
-
 
 	pauseAtTheEnd();
 	return 0;

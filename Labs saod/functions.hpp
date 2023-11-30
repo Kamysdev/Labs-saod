@@ -13,8 +13,8 @@ void quickSortV2(chanceSymbol*& A, int R, int L, unsigned short int field, bool 
 
 float calculationEntropy(chanceSymbol* A, unsigned int nums);
 
-float calculationAverageLength(codeShannon* A, unsigned int nums);
-float calculationAverageLength(codeFano* A, unsigned int nums);
+long double calculationAverageLength(codeShannon* A, unsigned int nums);
+long double calculationAverageLength(codeFano* A, unsigned int nums);
 float calculationAverageLength(codeGilbert* A, unsigned int nums);
 float calculationAverageLength(codeHuffman* A, unsigned int nums);
 #endif

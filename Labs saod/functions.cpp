@@ -1,7 +1,7 @@
 #include "functions.hpp"
 
 void printChanceSymbols(chanceSymbol* A, unsigned int num, unsigned short int encoding[256] ){
-    float tmp = 0;
+    long double tmp = 0;
 	for (int i = 0; i < num; i++){
         if(encoding){
             if (A[i].ch == '\n')
@@ -98,16 +98,16 @@ float calculationEntropy(chanceSymbol* A, unsigned int nums){
 	return -answer;
 }
 
-float calculationAverageLength(codeShannon* A, unsigned int nums){
-    float answer = 0;
+long double calculationAverageLength(codeShannon* A, unsigned int nums){
+    long double answer = 0;
 	for (int i = 0; i < nums; i++) {
 		answer += A[i].Li * A[i].Pi;
 	}
 	return answer;
 }
 
-float calculationAverageLength(codeFano* A, unsigned int nums){
-    float answer = 0;
+long double calculationAverageLength(codeFano* A, unsigned int nums){
+    long double answer = 0;
 	for (int i = 0; i < nums; i++) {
 		answer += A[i].Li * A[i].Pi;
 	}

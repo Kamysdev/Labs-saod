@@ -100,9 +100,7 @@ void FanoCode(codeFano * &fano, int borderL, int borderR, int k) {
 		FanoCode(fano, borderL, m, k);
 		FanoCode(fano, m + 1, borderR, k);
 	}
-	else {
-
-	}
+	else {	}
 
 }
 

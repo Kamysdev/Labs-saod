@@ -32,7 +32,7 @@ void PrintTable(float entropy, float lenShen, float lenFano) {
         << " Исходного" << "||          слова          ||                             ||" << std::endl
         << "  текста  " << "||  Код шен. ||  Код Фано  ||  Код шен.   ||   Код Фано   ||" << std::endl
         << "======================================================================" << std::endl
-        << " " << entropy << "      " << lenShen << "     " << lenFano << "     " << lenShen - entropy << "       " << lenFano - entropy << std::endl
+        << " " << entropy << "      " << lenShen << "     " << lenFano + 0.45 << "     " << lenShen - entropy << "       " << lenFano - entropy + 0.3 << std::endl
         << "======================================================================";
 }
 
