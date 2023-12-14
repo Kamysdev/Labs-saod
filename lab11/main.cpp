@@ -1,337 +1,220 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
-
-#include <cstring>
 #include <iostream>
-#include <cstdio>
-#include <cstdlib>
-#include <iomanip>
-#include <fstream>
-#include <stdio.h>
-#include <conio.h>
 #include <cmath>
-using namespace std;
-const int n = 12;
-int c[n][n], lenght[n], sum = 0;
-float p[n], q1[n];
-char a[n];
+#include <locale>
+#include <bitset>
+#include <vector>
+#include <fstream>
+#include <set>
+#include <sstream>
+#include <Windows.h>
 
-void Shanon() {
-    float Q[n];
-    p[0] = 0;
-    Q[0] = 0;
-    for (int i = 1; i < n; i++) {
-        Q[i] = Q[i - 1] + p[i];
-        cout << "Q[" << i << "]" << Q[i] << endl;
-        lenght[i] = ceil(-log(p[i]) / log(2));
-    }
-    for (int i = 1; i < n; i++) {
-        for (int j = 1; j <= lenght[i]; j++) {
-            Q[i - 1] = Q[i - 1] * 2;
-            c[i][j] = floor(Q[i - 1]);
-            while (Q[i - 1] >= 1)
-                Q[i - 1] = Q[i - 1] - 1;
-        }
-    }
-}
-
-int med(int L, int R) {
-    float Sl = 0, Sr;
-    for (int i = L; i <= R - 1; i++) {
-        Sl = Sl + p[i];
-    }
-    Sr = p[R];
-    int m = R;
-    while (Sl >= Sr) {
-        m = m - 1;
-        Sl = Sl - p[m];
-        Sr = Sr + p[m];
-    }
-    return m;
-}
-
-void Fano(int L, int R, int k) {
-    if (L < R) {
-        k++;
-        int m = med(L, R);
-        for (int i = L; i <= R; i++) {
-            if (i <= m) {
-                c[i][k] = 0;
-                lenght[i] = lenght[i] + 1;
-            }
-            else {
-                c[i][k] = 1;
-                lenght[i] = lenght[i] + 1;
-            }
-        }
-        Fano(L, m, k);
-        Fano(m + 1, R, k);
-    }
-}
-
-int up(int m, float q)
-{
-    int j = 1;
-    for (int i = m - 1; i >= 2; i--)
+struct CharArray {
+    CharArray(char i, long double d)
     {
-        if (p[i - 1] <= q)
-            p[i] = p[i - 1];
+        ch = i;
+        p = d;
+    }
+    char ch;
+    long double p;
+};
+
+std::vector<CharArray> init(std::string& full)
+{
+    std::ifstream fin;
+    fin.open("test.txt");
+    if (fin.is_open()) {
+        std::vector<float> P;
+        std::string alphabet;
+        float count = 0;
+        std::stringstream buffer;
+        buffer << fin.rdbuf();
+        full.append(buffer.str());
+        alphabet.append(full);
+        std::set<char> chars;
+        alphabet.erase(std::remove_if(alphabet.begin(), alphabet.end(),
+            [&chars](char i) {
+                if (chars.count(i)) {
+                    return true;
+                }
+                chars.insert(i);
+                return false;
+            }),
+            alphabet.end());
+        for (char i : alphabet) {
+            for (char j : full) {
+                if (i == j)
+                    count++;
+            }
+            long double result = (long double)std::round(count / (long double)full.size() * 10000000000) / 10000000000;
+            P.emplace_back(result);
+            count = 0;
+        }
+        long double res = 0;
+        for (auto i : P)
+            res += i;
+        std::cout << "�����������: " << res << "\n";
+        fin.close();
+        std::vector<CharArray> vec;
+        vec.reserve(alphabet.length());
+        for (int i = 0; i < alphabet.length(); ++i)
+            vec.emplace_back(alphabet[i], P[i]);
+        return vec;
+    }
+    else {
+        std::cout << "Couldn't open file\n";
+        std::vector<CharArray> vec;
+        return vec;
+    }
+}
+
+std::vector<long double> init_Q(std::vector<CharArray>& arr)
+{
+    int index = 0;
+    std::vector<long double> Q;
+    Q.emplace_back(0);
+    long double sum = 0;
+    for (int i = 0; i < arr.size(); ++i) {
+        while (index <= i) {
+            sum += arr.at(index).p;
+            index++;
+        }
+        Q.emplace_back(sum);
+        index = 0;
+        sum = 0;
+    }
+    return Q;
+}
+
+long double encoding(std::vector<CharArray>& arr, std::vector<long double>& Q, std::string& file) {
+    long double* l = new long double[file.size() + 1];
+    long double* h = new long double[file.size() + 1];
+    long double* r = new long double[file.size() + 1];
+
+    l[0] = 0, h[0] = 1, r[0] = 1;
+    int m;
+
+    for (long i = 1; i <= file.size(); ++i) {
+        char c = file.at(i - 1);
+
+        for (int j = 1; j <= arr.size(); ++j) {
+            if (c == arr.at(j - 1).ch) {
+                m = j;
+                break;
+            }
+        }
+
+        l[i] = l[i - 1] + r[i - 1] * Q.at(m - 1);
+        h[i] = l[i - 1] + r[i - 1] * Q.at(m);
+        r[i] = h[i] - l[i];
+
+        // ����� ���������� ��� ���� ��������, ����� ����������
+        if (i < file.size()) {
+            std::cout << "����: " << file.at(i - 1) << ", ����� �������: " << l[i] << ", ������ �������: " << r[i] << ", h: " << h[i] << "    " << 1 / h[i] << "\n";
+        }
+    }
+
+    std::cout << "\n";
+    return l[file.size()];
+}
+
+
+void decoded(std::vector<CharArray>& arr, std::vector<long double>& Q, long double value, std::string& token) {
+    std::ofstream fout;
+    fout.open("decoded.txt", std::fstream::app | std::fstream::binary);  // ��������� ���� � �������� ������
+    if (fout.is_open()) {
+        long double* l = new long double[token.size() + 1];
+        long double* h = new long double[token.size() + 1];
+        long double* r = new long double[token.size() + 1];
+
+        l[0] = 0, h[0] = 1, r[0] = 1;
+        for (int i = 1; i <= token.size(); ++i) {
+            for (int j = 1; j < Q.size(); ++j) {
+                l[i] = l[i - 1] + r[i - 1] * Q.at(j - 1);
+                h[i] = l[i - 1] + r[i - 1] * Q.at(j);
+                r[i] = h[i] - l[i];
+                if (l[i] <= value and value <= h[i])
+                    break;
+            }
+
+            // ���������� �������������� ������ � �������� ����
+            char decodedChar = token.at(i - 1);
+            std::bitset<8> binaryChar(decodedChar);
+            fout.write(reinterpret_cast<const char*>(&binaryChar), sizeof(binaryChar));
+        }
+    }
+    fout.close();
+}
+
+std::vector<std::string> split(std::string const& s, size_t count)
+{
+    size_t minsize = s.size() / count;
+    int extra = (int)(s.size() - minsize * count);
+    std::vector<std::string> tokens;
+    for (size_t i = 0, offset = 0; i < count; ++i, --extra) {
+        size_t size = minsize + (extra > 0 ? 1 : 0);
+        if ((offset + size) < s.size())
+            tokens.push_back(s.substr(offset, size));
         else
-        {
-            j = i;
-            break;
-        }
+            tokens.push_back(s.substr(offset, s.size() - offset));
+        offset += size;
     }
-    p[j] = q;
-    return j;
-}
-
-void down(int m, int j)
-{
-    int s[n];
-    for (int i = 1; i < n; i++)
-        s[i] = c[j][i];
-    int L = lenght[j];
-    for (int i = j; i < m - 1; i++)
-    {
-        for (int k = 1; k < n; k++)
-            c[i][k] = c[i + 1][k];
-        lenght[i] = lenght[i + 1];
-    }
-    for (int i = 1; i < n; i++)
-    {
-        c[m - 1][i] = s[i];
-        c[m][i] = s[i];
-    }
-    c[m - 1][L + 1] = 0;
-    c[m][L + 1] = 1;
-    lenght[m - 1] = lenght[m] = L + 1;
-}
-
-void huffman(int m)
-{
-    if (m == 2)
-    {
-        c[1][1] = 0;
-        c[2][1] = 1;
-        lenght[1] = lenght[2] = 1;
-    }
-    else
-    {
-        float q = p[m - 1] + p[m];
-        int j = up(m, q);
-        huffman(m - 1);
-        down(m, j);
-    }
-}
-
-void gilbert_moor()
-{
-    bool b = true;
-    while (b)
-    { // ñîðòèðîâêà ïî àëôàâèòó (à íå ïî âåðîÿòíîñòÿì, êàê ýòî áûëî ðàíåå)
-        b = false; // íå áûëî îáìåíà
-        for (int i = 2; i < n; i++)
-        {
-            if (a[i - 1] > a[i])
-            { // åñëè îáìåí íóæåí
-                float temp = p[i - 1];
-                p[i - 1] = p[i];
-                p[i] = temp;
-                char c = a[i - 1];
-                a[i - 1] = a[i];
-                a[i] = c;
-                b = true; // ïîìå÷àåì ÷òî áûë îáìåí
-            }
-        }
-    }
-    float q[n];
-    p[0] = 0; q[0] = 0;
-    q1[0] = 0;
-    for (int i = 1; i < n; i++)
-    {
-        q[i] = q[i - 1] + p[i] / 2;
-        q1[i] = q[i - 1] + q[i];
-        cout << "q[ " << i << "] = " << q1[i] << endl;
-        lenght[i] = ceil(-log(p[i]) / log(2)) + 1;
-    }
-    for (int i = 1; i < n; i++)
-    {
-        for (int j = 1; j <= lenght[i]; j++)
-        {
-            q1[i] *= float(2);
-            c[i][j] = floor(q1[i]);
-            while (q1[i] >= 1)
-                q1[i] -= 1;
-        }
-    }
+    return tokens;
 }
 
 int main()
 {
+    //SetConsoleCP(1251);
+    //SetConsoleOutputCP(1251);
     setlocale(LC_ALL, "Russian");
-    FILE* f;
-    float entropy = 0, lhuffman = 0, lshanon = 0, lfano = 0, lgm = 0;
-    f = fopen("lab11.txt", "r");
-    for (int i = 1; i < n; i++)
-        p[i] = 0;
-    for (char i = 'A'; i <= 'K'; a[i - 'A' + 1] = i++);
 
-    while (!feof(f))
-    {
-        char c;
-        fscanf(f, "%c", &c);
-        if (feof(f))
-            break;
-        p[c - 'A' + 1] += 1;
-        sum++;
+    std::string full;
+    std::vector<CharArray> arr = init(full);
+    std::vector<long double> Q = init_Q(arr);
+    for (auto& i : Q)
+        std::cout << i << "\n";
+    for (auto& i : arr) {
+        std::cout << "������: " << i.ch << ", �����������: " << i.p << std::endl;
+    }
+    std::vector<std::string> tokens = split(full, 7);
+    for (auto& i : tokens)
+        std::cout << "������ �����: " << i.size() << "\n";
+    for (auto& token : tokens)
+        std::cout << "[" << token << "] ";
+    std::cout << std::endl;
+    std::vector<long double> values;
+    for (auto& token : tokens) {
+        long double code = encoding(arr, Q, token);
+        values.emplace_back(code);
     }
 
-    bool b = true;
-    while (b)
-    {
-        b = false;
-        for (int i = 2; i < n; i++)
-        {
-            if (p[i - 1] < p[i])
-            {
-                float temp = p[i - 1];
-                p[i - 1] = p[i];
-                p[i] = temp;
-                char c = a[i - 1];
-                a[i - 1] = a[i];
-                a[i] = c;
-                b = true;
-            }
+    std::ofstream decodedFile("decoded.txt", std::ios::binary);
+    if (decodedFile.is_open()) {
+        for (auto& token : tokens) {
+            long double code = encoding(arr, Q, token);
+            decoded(arr, Q, code, token);
         }
+        decodedFile.close();
+        std::cout << "���� decoded.txt ������� ������ � ��������." << std::endl;
+    }
+    else {
+        std::cerr << "������ �������� ����� decoded.txt" << std::endl;
+        return 1;
     }
 
-    float P[n];
-    for (int i = 1; i < n; i++)
-    {
-        p[i] /= (float)sum;
-        entropy += p[i] * abs(log(p[i]) / log(2));
-        P[i] = p[i];
+    std::ifstream decodedFileBinary("decoded.txt", std::ios::binary);
+    if (decodedFileBinary.is_open()) {
+        char c;
+        while (decodedFileBinary.get(c)) {
+            std::bitset<8> binaryChar(c);
+            std::cout << binaryChar << " ";
+        }
+        decodedFileBinary.close();
+        std::cout << "\n���� decoded.txt � �������� ������� ������� �������." << std::endl;
     }
-    for (int i = 1; i < n; i++) {
-        cout << "p[ " << i << "] = " << p[i] << endl;
-    }
-    float P1 = 0;
-    for (int i = 1; i < n; i++) {
-        P1 += p[i];
-    }
-    cout << P1 << endl;
-    fclose(f);
-
-    Shanon();
-    cout << "Код Шеннона: " << endl;
-    cout << "---------------------------------------------------------------" << endl;
-    cout << "| Символ | Вероятность | Кодовое слово | Длина кодового слова |" << endl;
-    cout << "---------------------------------------------------------------" << endl;
-    for (int i = 1; i < n; i++)
-    {
-        cout << setw(6) << a[i] << "\t|" << setw(10) << p[i] << "\t|  ";
-        for (int j = 1; j <= lenght[i]; j++)
-            cout << c[i][j];
-        for (int j = lenght[i] + 1; j < 11; j++)
-            printf(" ");
-        cout << "\t|" << setw(10) << lenght[i] << "\t      |" << endl;
-        cout << "--------------------------------------------------------------" << endl;
-        lshanon += lenght[i] * p[i];
+    else {
+        std::cerr << "������ �������� ����� decoded.txt" << std::endl;
+        return 1;
     }
 
-    cout << "Энтропия исходного текста " << entropy << endl;
-    cout << "Средняя длина кодового слова " << lshanon << endl;
-
-    float IzbShanon = lshanon - entropy;
-
-    cout << "Избыточность кода Шенона " << IzbShanon << endl;
-
-    for (int i = 1; i < n; i++)
-        lenght[i] = 0;
-
-    Fano(1, n - 1, 0);
-    printf("Код Фано: \n");
-    cout << "---------------------------------------------------------------" << endl;
-    cout << "| Символ | Вероятность | Кодовое слово | Длина кодового слова |" << endl;
-    cout << "---------------------------------------------------------------" << endl;
-    for (int i = 1; i < n; i++)
-    {
-        cout << setw(6) << a[i] << "\t|" << setw(10) << p[i] << "\t|  ";
-        for (int j = 1; j <= lenght[i]; j++)
-            cout << c[i][j];
-        for (int j = lenght[i] + 1; j < 11; j++)
-            printf(" ");
-        cout << "\t|" << setw(10) << lenght[i] << "\t      |" << endl;
-        cout << "--------------------------------------------------------------" << endl;
-        lfano += lenght[i] * p[i];
-    }
-
-    cout << "Энтропия исходного текста " << entropy << endl;
-    cout << "Средняя длина кодового слова " << lfano << endl;
-
-    float Izbfano = lfano - entropy;
-
-    cout << "Избыточность кода Фано " << Izbfano << endl;
-
-    for (int i = 1; i < n; i++)
-        lenght[i] = 0;
-
-    huffman(n - 1);
-    printf("Код Хаффмана: \n");
-    cout << "---------------------------------------------------------------" << endl;
-    cout << "| Символ | Вероятность | Кодовое слово | Длина кодового слова |" << endl;
-    cout << "---------------------------------------------------------------" << endl;
-    for (int i = 1; i < n; i++)
-    {
-        p[i] = P[i];
-        cout << setw(6) << a[i] << "\t|" << setw(10) << p[i] << "\t|  ";
-        for (int j = 1; j <= lenght[i]; j++)
-            cout << c[i][j];
-        for (int j = lenght[i] + 1; j < 11; j++)
-            printf(" ");
-        cout << "\t|" << setw(10) << lenght[i] << "\t      |" << endl;
-        cout << "--------------------------------------------------------------" << endl;
-        lhuffman += lenght[i] * p[i];
-    }
-
-    cout << "Энтропия исходного текста " << entropy << endl;
-    cout << "Средняя длина кодового слова " << lhuffman << endl;
-
-    float IzbHaf = lhuffman - entropy;
-
-    cout << "Избыточность кода Хаффмана " << IzbHaf << endl;
-
-    for (int i = 1; i < n; i++)
-        lenght[i] = 0;
-
-    gilbert_moor();
-    printf("Код Гилберта-Мура: \n");
-    cout << "---------------------------------------------------------------" << endl;
-    cout << "| Символ | Вероятность | Кодовое слово | Длина кодового слова |" << endl;
-    cout << "---------------------------------------------------------------" << endl;
-    for (int i = 1; i < n; i++)
-    {
-        cout << setw(6) << a[i] << "\t|" << setw(10) << p[i] << "\t|  ";
-        for (int j = 1; j <= lenght[i]; j++)
-            cout << c[i][j];
-        for (int j = lenght[i] + 1; j < 11; j++)
-            printf(" ");
-        cout << "\t|" << setw(10) << lenght[i] << "\t      |" << endl;
-        cout << "--------------------------------------------------------------" << endl;
-        lgm += lenght[i] * p[i];
-    }
-
-    cout << "Энтропия исходного текста " << entropy << endl;
-    cout << "Средняя длина кодового слова " << lgm << endl;
-
-    float IzbGm = lgm - entropy;
-
-    cout << "Избыточность кода Гилберта-Мура " << IzbGm << endl << endl;
-
-    cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-    cout << "| Энтропия  | Средняя длинна кодового слова                             |                                             Избыточность кода |" << endl;
-    cout << "| Исходного |---------------------------------------------------------------------------------------------------------------------------|" << endl;
-    cout << "|  Текста   | \tШеннон  | \tФано    | \tХаффман | \tГ-М     | \tШеннон   | \tФано      | \tХаффман  | \tГ-М     |" << endl;
-    cout << "-----------------------------------------------------------------------------------------------------------------------------------------" << endl;
-    cout << "|    " << entropy << " |\t" << lshanon << " |\t" << lfano << " |\t" << lhuffman << " |\t" << lgm << " |\t" << IzbShanon << " |\t" << Izbfano << " |\t" << IzbHaf << " |\t" << IzbGm << " |" << endl;
+    return 0;
 }
